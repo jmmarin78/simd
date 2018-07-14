@@ -109,16 +109,16 @@ namespace simd
 		FORCE_INLINE quaternion_t<T> & operator/=(U s);
 	};
 	
-	template<typename T>
+	template<typename TP, typename TV>
 	struct lookat_t
 	{
-		typedef pack_t<3, T> 	TVertex;
-		pack_t<3, T>			from, to, up;
+		pack_t<3, TP>			from, to;
+		pack_t<3, TV>			up;
 
-		FORCE_INLINE	lookat_t()																					{}
-		lookat_t(const TVertex& iFrom, const TVertex& iTarget, const TVertex& iUp,bool iCorrectUp);
-		FORCE_INLINE	auto	vector() const -> pack_t<3, T> 														{return to - from;}
-		FORCE_INLINE	auto	right() const -> pack_t<3, T>														{return cross(vector(), up);}
+		FORCE_INLINE	lookat_t()																										{}
+		lookat_t(const pack_t<3, TP>& FromPosition, const pack_t<3, TP>& ToTarget, const pack_t<3, TV>& UpVector, bool iCorrectUp);
+		FORCE_INLINE	auto	vector() const -> pack_t<3, TP> 																		{return to - from;}
+		FORCE_INLINE	auto	right() const -> pack_t<3, TV>																			{return cross(vector(), up);}
 	};
 	
 	template<typename _T_Position,typename _T_Spin,typename _T_Scale>
