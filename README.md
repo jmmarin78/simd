@@ -1,5 +1,8 @@
 # simd
 
+## Version
+The current version is 0.0000...1, so keep it in mind if you want to use this software. This means that it is still in process (implementation and design), so be patient, and send your opinions to improve this library. 
+
 ## Motivation
 For a long time I have been implementing some simd libraries.
 I finally decided to use the GLM library (https://github.com/g-truc/glm), but there are some things that I prefer to implement  differently:
