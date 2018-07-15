@@ -27,13 +27,15 @@ namespace simd
 namespace simd
 {
 #define SIMD_ITEM_FUNCTION(_T)	\
-template<>	DLL_FUNCTION(_T)						sqrt(const _T& v)		{return _T(::sqrt(v));} \
-template<>	DLL_FUNCTION(_T)						rcp(const _T& v)		{return _T(1.0 / v);} \
-template<>	DLL_FUNCTION(_T)						rsq(const _T& v)		{return _T(1.0 / ::sqrt(v));} \
-template<>	DLL_FUNCTION(_T)						sin<_T>(const _T& v)	{return _T(::sin(v));} \
-template<>	DLL_FUNCTION(_T)						cos<_T>(const _T& v)	{return _T(::cos(v));} \
-template<>	DLL_FUNCTION(_T)						tan<_T>(const _T& v)	{return _T(::tan(v));} \
-template<>	DLL_FUNCTION(lengthi_t<_T>::type)		length<_T>(const _T& v)	{return simd::abs(v);} \
+template<>	DLL_FUNCTION(_T)						max(const _T& a, const _T& b)	{return a >= b ? a : b;} \
+template<>	DLL_FUNCTION(_T)						min(const _T& a, const _T& b)	{return a <= b ? a : b;} \
+template<>	DLL_FUNCTION(_T)						sqrt(const _T& v)				{return _T(::sqrt(v));} \
+template<>	DLL_FUNCTION(_T)						rcp(const _T& v)				{return _T(1.0 / v);} \
+template<>	DLL_FUNCTION(_T)						rsq(const _T& v)				{return _T(1.0 / ::sqrt(v));} \
+template<>	DLL_FUNCTION(_T)						sin<_T>(const _T& v)			{return _T(::sin(v));} \
+template<>	DLL_FUNCTION(_T)						cos<_T>(const _T& v)			{return _T(::cos(v));} \
+template<>	DLL_FUNCTION(_T)						tan<_T>(const _T& v)			{return _T(::tan(v));} \
+template<>	DLL_FUNCTION(lengthi_t<_T>::type)		length<_T>(const _T& v)			{return simd::abs(v);} \
 
 
 	
