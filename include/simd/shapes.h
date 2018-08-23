@@ -79,10 +79,11 @@ namespace simd
 	private:
 		pack_t<D + 1, T>	mData;
 	public:
-		SHAPES_FUNC_INL	auto	axis() -> pack_t<3, T>&						{return *(pack_t<3, T>*)&mData;}
-		SHAPES_FUNC_INL	auto	axis() const -> const pack_t<3, T>&			{return *(const pack_t<3, T>*)&mData;}
-		SHAPES_FUNC_INL	auto	origin_distance() -> T&								{return mData.w;}
-		SHAPES_FUNC_INL	auto	origin_distance() const -> const T&					{return mData.w;}
+		SDLL_FNC(auto)	fromPoints(const pack_t<D, T>& A, const pack_t<D, T>& B, const pack_t<D, T>& C);
+		INL_FNC(auto)	axis() -> pack_t<3, T>&						{return *(pack_t<3, T>*)&mData;}
+		INL_FNC(auto)	axis() const -> const pack_t<3, T>&			{return *(const pack_t<3, T>*)&mData;}
+		INL_FNC(auto)	origin_distance() -> T&						{return mData.w;}
+		INL_FNC(auto)	origin_distance() const -> const T&			{return mData.w;}
 	};
 	
 	template <int D, typename T>
@@ -270,6 +271,11 @@ namespace simd
 	int D2, typename T2, bool _ForwardsInfinite2, bool _BackwardsInfinite2
 	>
 	bool	intersect(const TLinearShape<D1, T1, _ForwardsInfinite1, _BackwardsInfinite1>&, const TLinearShape<D2, T2, _ForwardsInfinite2, _BackwardsInfinite2>&);
+
+	template <int D1, typename T1, int D2, typename T2>
+	DLL_FNC(auto)	distance(const pack_t<D1, T1>&, const TPlane<D2, T2>&) -> typename high_precission_t<T1, T2>::type;
+	template <int D1, typename T1, int D2, typename T2>
+	INL_FNC(auto)	distance(const TPlane<D2, T2>& APlane, const pack_t<D1, T1>& APoint) {return distance(APoint, APlane);}
 
 	
 	#define	DECLARE_SHAPE(_Shape, _Type, _NewType) \
