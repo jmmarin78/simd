@@ -159,6 +159,8 @@ namespace simd
 	struct TSegment : public TLinearShape<D, T, false, false>
 	{
 		FORCE_INLINE	TSegment(){};
+		FORCE_INLINE	TSegment(const pack_t<D, T>& v0, const pack_t<D, T>& v1) {this->Vertex[0] = v0; this->Vertex[1] = v1;};
+
 	};
 	
 	template<int D, typename T>
@@ -265,13 +267,19 @@ namespace simd
 		typename M::Vertex		local_vertex(bool AMaxValueX, bool AMaxValueY, bool AMaxValueZ) const;
 	};
 
+	template<int D, typename T1, typename T2>
+	bool	overlaps(const aabox_t<D, T1>&, const pack_t<D, T2>&);
+	template<int D, typename T1, typename T2>
+	inline bool	overlaps(const pack_t<D, T1>& p, const aabox_t<D, T2>& b) {return overlaps(b, p);}
 
-	template<
-	int D1, typename T1, bool _ForwardsInfinite1, bool _BackwardsInfinite1,
-	int D2, typename T2, bool _ForwardsInfinite2, bool _BackwardsInfinite2
-	>
+	template<int D1, typename T1, bool _ForwardsInfinite1, bool _BackwardsInfinite1, int D2, typename T2, bool _ForwardsInfinite2, bool _BackwardsInfinite2>
 	bool	intersect(const TLinearShape<D1, T1, _ForwardsInfinite1, _BackwardsInfinite1>&, const TLinearShape<D2, T2, _ForwardsInfinite2, _BackwardsInfinite2>&);
+	template<int D, typename T1, bool _ForwardsInfinite1, bool _BackwardsInfinite1, typename T2>
+	bool	intersect(const TLinearShape<D, T1, _ForwardsInfinite1, _BackwardsInfinite1>&, const aabox_t<D, T2>&);
+	template<int D, typename T1, typename T2, bool _ForwardsInfinite, bool _BackwardsInfinite>
+	inline	bool	intersect(const aabox_t<D, T2>& b, const TLinearShape<D, T1, _ForwardsInfinite, _BackwardsInfinite>& l) {return intersect(l, b);}
 
+	
 	template <int D1, typename T1, int D2, typename T2>
 	DLL_FNC(auto)	distance(const pack_t<D1, T1>&, const TPlane<D2, T2>&) -> typename high_precission_t<T1, T2>::type;
 	template <int D1, typename T1, int D2, typename T2>

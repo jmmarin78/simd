@@ -265,7 +265,257 @@ namespace simd
 	//		}
 	//	}
 	
+	template<int D, typename T1, typename T2>
+	bool	overlaps(const aabox_t<D, T1>& ABox, const pack_t<D, T2>& APoint)
+	{
+		for (int i = 0; i < D; i++)
+		{
+			if (APoint[i] < ABox.min[i])
+				return false;
+			if (APoint[i] > ABox.max[i])
+				return false;
+		}
+		return true;
+	}
 	
+	template <typename T>
+	static bool RaySlabIntersect(T slabmin, T slabmax, T raystart, T rayend, T& tbenter, T& tbexit)
+	{
+		T raydir = rayend - raystart;
+		
+		// ray parallel to the slab
+		if (fabs(raydir) < 1.0E-9f)
+		{
+			// ray parallel to the slab, but ray not inside the slab planes
+			if(raystart < slabmin || raystart > slabmax)
+			{
+				return false;
+			}
+			// ray parallel to the slab, but ray inside the slab planes
+			else
+			{
+				return true;
+			}
+		}
+		
+		// slab's enter and exit parameters
+		T tsenter = (slabmin - raystart) / raydir;
+		T tsexit = (slabmax - raystart) / raydir;
+		
+		// order the enter / exit values.
+		if(tsenter > tsexit)
+		{
+			auto v = tsenter;
+			tsenter = tsexit;
+			tsexit = v;
+			//swapf(tsenter, tsexit);
+		}
+		
+		// make sure the slab interval and the current box intersection interval overlap
+		if (tbenter > tsexit || tsenter > tbexit)
+		{
+			// nope. Ray missed the box.
+			return false;
+		}
+		// yep, the slab and current intersection interval overlap
+		else
+		{
+			// update the intersection interval
+			tbenter = max(tbenter, tsenter);
+			tbexit = min(tbexit, tsexit);
+			return true;
+		}
+	}
+	
+	template <typename T>
+	static bool SegmentIntersectRectangle(T a_rectangleMinX,
+								   T a_rectangleMinY,
+								   T a_rectangleMaxX,
+								   T a_rectangleMaxY,
+								   T a_p1x,
+								   T a_p1y,
+								   T a_p2x,
+								   T a_p2y)
+	{
+		// Find min and max X for the segment
+		
+		T minX = a_p1x;
+		T maxX = a_p2x;
+		
+		if(a_p1x > a_p2x)
+		{
+			minX = a_p2x;
+			maxX = a_p1x;
+		}
+		
+		// Find the intersection of the segment's and rectangle's x-projections
+		
+		if(maxX > a_rectangleMaxX)
+		{
+			maxX = a_rectangleMaxX;
+		}
+		
+		if(minX < a_rectangleMinX)
+		{
+			minX = a_rectangleMinX;
+		}
+		
+		if(minX > maxX) // If their projections do not intersect return false
+		{
+			return false;
+		}
+		
+		// Find corresponding min and max Y for min and max X we found before
+		
+		T minY = a_p1y;
+		T maxY = a_p2y;
+		
+		T dx = a_p2x - a_p1x;
+		
+		if(fabs(dx) > 0.0000001)
+		{
+			T a = (a_p2y - a_p1y) / dx;
+			T b = a_p1y - a * a_p1x;
+			minY = a * minX + b;
+			maxY = a * maxX + b;
+		}
+		
+		if(minY > maxY)
+		{
+			T tmp = maxY;
+			maxY = minY;
+			minY = tmp;
+		}
+		
+		// Find the intersection of the segment's and rectangle's y-projections
+		
+		if(maxY > a_rectangleMaxY)
+		{
+			maxY = a_rectangleMaxY;
+		}
+		
+		if(minY < a_rectangleMinY)
+		{
+			minY = a_rectangleMinY;
+		}
+		
+		if(minY > maxY) // If Y-projections do not intersect return false
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	template<int D, typename T1, bool _ForwardsInfinite, bool _BackwardsInfinite, typename T2>
+	bool	intersect(const TLinearShape<D, T1, _ForwardsInfinite, _BackwardsInfinite>& line, const aabox_t<D, T2>& rect)
+	{
+//		if (D == 2)
+//		{
+//			return SegmentIntersectRectangle(rect.min.x, rect.min.y, rect.max.x, rect.max.y,
+//											 line.Vertex[0].x, line.Vertex[0].y, line.Vertex[1].x, line.Vertex[1].y);
+//		}
+//		return false;
+		
+		T1	tenter = 0, texit = 1;
+
+		// test X slab
+
+		for (int i = 0; i < D; i++)
+		{
+			if (!RaySlabIntersect(rect.min[i], rect.max[i], line.Vertex[0][i], line.Vertex[1][i], tenter, texit))
+			{
+				return false;
+			}
+		}
+		return true;
+
+		
+//		if (D == 2)
+//		{
+//			// initialise to the segment's boundaries.
+//
+//			// test Y slab
+//
+//			if (!RaySlabIntersect(rect.min.y, rect.max.y, Seg.Start.y, Seg.End.y, tenter, texit))
+//			{
+//				return false;
+//			}
+//
+//			// test Z slab
+//			if (!RaySlabIntersect(rect.min.z, rect.max.z, Seg.Start.z, Seg.End.z, tenter, texit))
+//			{
+//				return false;
+//			}
+//
+//			// all intersections in the green. Return the first time of intersection, tenter.
+//			tinter = tenter;
+//			return  true;
+//
+//			/*
+//			if (overlaps(line.Vertex[0], rect) || overlaps(line.Vertex[1], rect)) {
+//				return true;
+//			}
+//
+//			auto dir = line.Vertex[0] - line.Vertex[1];
+//			auto len2 = dot(dir, dir);
+//			auto norm = dir * rsq(len2);
+//			for (int i = 0; i < D; i++)
+//				norm[i] = (norm[i] != 0) ? (1 / norm[i]) : 0;
+//
+//			auto min = (rect.min - line.Vertex[0]) * norm;
+//			auto max = (rect.max - line.Vertex[0]) * norm;
+//
+//			auto tmin = fmaxf(fminf(min.x, max.x), fminf(min.y, max.y));
+//			auto tmax = fminf(fmaxf(min.x, max.x), fmaxf(min.y, max.y));
+//			if (tmax < 0 || tmin > tmax) {
+//				return false;
+//			}
+//			float t = (tmin < 0.0f) ? tmax : tmin;
+//			return t > 0.0f && t * t < len2;
+//			 */
+//		}
+//		return false;
+		
+		
+//		high_precission_t<T1, T2>::type tmin, tmax, tymin, tymax, tzmin, tzmax;
+//
+//		tmin = (parameters[r.sign[0]].x() - r.origin.x()) * r.inv_direction.x();
+//		tmax = (parameters[1-r.sign[0]].x() - r.origin.x()) * r.inv_direction.x();
+//		tymin = (parameters[r.sign[1]].y() - r.origin.y()) * r.inv_direction.y();
+//		tymax = (parameters[1-r.sign[1]].y() - r.origin.y()) * r.inv_direction.y();
+//		if ( (tmin > tymax) || (tymin > tmax) )
+//			return false;
+//		if (tymin > tmin)
+//			tmin = tymin;
+//		if (tymax < tmax)
+//			tmax = tymax;
+//		tzmin = (parameters[r.sign[2]].z() - r.origin.z()) * r.inv_direction.z();
+//		tzmax = (parameters[1-r.sign[2]].z() - r.origin.z()) * r.inv_direction.z();
+//		if ( (tmin > tzmax) || (tzmin > tmax) )
+//			return false;
+//		if (tzmin > tmin)
+//			tmin = tzmin;
+//		if (tzmax < tmax)
+//			tmax = tzmax;
+//		return ( (tmin < t1) && (tmax > t0) );
+
+	}
+	
+	template	bool			intersect<2, float, false, false, float>(const TLinearShape<2, float, false, false>& line, const aabox_t<2, float>& rect);
+
+	
+//	template<
+//	int D1, typename T1,
+//	int D2, typename T2, bool _ForwardsInfinite, bool _BackwardsInfinite
+//	>
+//	inline	bool	intersect(const aabox_t<D2, T2>& b, const TLinearShape<D1, T1, _ForwardsInfinite, _BackwardsInfinite>& l) {return intersect(l, b);}
+//
+//	bool Box::intersect(const Ray &r, float t0, float t1) const {
+//	}
+//
+//
+//
 	
 	/*
 	 bool
